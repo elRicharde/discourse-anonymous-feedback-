@@ -13,16 +13,18 @@ class ::AnonymousFeedbackController < ::ApplicationController
   end
 
   def create
+    # Honeypot
+    return render json: { success: true }, status: 200 if params[:website].present?
+
     door_code = params[:door_code].to_s
+    subject   = params[:subject].to_s.strip
     message   = params[:message].to_s
 
-    unless door_code.present? && message.present?
+    unless door_code.present? && subject.present? && message.present?
       return render json: { error: I18n.t("anonymous_feedback.errors.missing_fields") }, status: 400
     end
 
-    # Chapter später: doorcode prüfen, ratelimit, PM senden
-    render json: { success: true }
-  rescue => e
-    render json: { error: e.message }, status: 500
+    # Doorcode-Check kommt in Chapter 4
+    render json: { success: true }, status: 200
   end
 end
