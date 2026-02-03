@@ -6,5 +6,8 @@
 enabled_site_setting :anonymous_feedback_enabled
 
 after_initialize do
-  # Chapter 2: routes + controller
+  Discourse::Application.routes.append do
+    get "/anonymous-feedback" => "anonymous_feedback#index"
+  end
 end
+
