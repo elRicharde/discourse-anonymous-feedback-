@@ -6,6 +6,7 @@ plugins:
   anonymous_feedback_door_code:
     default: "CHANGE_TO_PASSCODE"
     client: false
+    secret: true
 
   anonymous_feedback_target_group:
     default: "heartcare"
