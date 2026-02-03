@@ -1,12 +1,20 @@
 de:
   site_settings:
+
+    anonymous_feedback_rate_limit_per_hour: "Rate Limit"
+    anonymous_feedback_rate_limit_per_hour_description: "Maximale Anzahl an Einsendungen pro IP und Stunde"
+    
     anonymous_feedback_max_message_length: "Maximale Nachrichtenlänge"
     anonymous_feedback_max_message_length_description: >
       Maximale Länge der anonymen Nachricht in Zeichen.
       Leerzeichen und Zeilenumbrüche zählen mit.
 
+  
 en:
   site_settings:
+  
+    anonymous_feedback_rate_limit_per_hour: "Rate Limit"
+    anonymous_feedback_rate_limit_per_hour_description: "Rate limit per IP and hour"
+    
     anonymous_feedback_max_message_length: "maximum message length"
-    anonymous_feedback_max_message_length_description: >
-      maximum length of message in characters incl. space
+    anonymous_feedback_max_message_length_description: "maximum length of message in characters incl. space"
