@@ -13,8 +13,8 @@ plugins:
     client: false
 
   anonymous_feedback_rate_limit_per_hour:
-    default: 6
-    min: 1
+    default: 5
+    min: 0
     max: 100
     client: false
 
