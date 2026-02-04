@@ -1,0 +1,33 @@
+.anon-feedback-page {
+  .control-group .controls {
+    max-width: none;
+  }
+
+  .anon-feedback-input,
+  .anon-feedback-textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .anon-feedback-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .anon-feedback-honeypot {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+  }
+
+  @media (max-width: 480px) {
+    .anon-feedback-actions .btn {
+      width: 100%;
+    }
+  }
+}

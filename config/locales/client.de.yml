@@ -1,0 +1,12 @@
+de:
+  js:
+    anonymous_feedback:
+      title: "Anonymes Feedback"
+      subtitle: "Kein Login nötig. Erst Türcode eingeben, danach Nachricht verfassen."
+      door_code_label: "Türcode"
+      subject_label: "Betreff"
+      message_label: "Nachricht"
+      next: "Weiter"
+      send: "Senden"
+      sending: "Sende..."
+      sent: "Gesendet."

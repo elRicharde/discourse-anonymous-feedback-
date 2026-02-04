@@ -1,0 +1,22 @@
+en:
+  anonymous_feedback:
+
+    site_settings:
+      anonymous_feedback_door_code: "Door code for the anonymous feedback form"
+      anonymous_feedback_target_group: "Group name to receive the feedback via PM"
+      anonymous_feedback_rate_limit_per_hour: "Global limit: max feedbacks per hour (0 = disabled)"
+      anonymous_feedback_max_message_length: "Maximum message length (0 = unlimited)"
+
+    errors:
+      disabled: "The feedback form is disabled."
+      invalid_code: "Invalid code."
+      not_unlocked: "Please enter the door code first."
+      rate_limited: "Please wait (%{seconds}s) and try again."
+      post_rate_limited: "Too many messages. Please wait (%{seconds}s)."
+      missing_fields: "Please fill in subject and message."
+      too_long: "Message is too long."
+      group_not_configured: "Target group is not configured."
+      group_not_found: "Target group does not exist."
+      send_failed: "Sending failed."
+      generic: "Error."
+

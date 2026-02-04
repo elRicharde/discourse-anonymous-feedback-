@@ -1,32 +1,46 @@
 import Controller from "@ember/controller";
 import { tracked } from "@glimmer/tracking";
-import { ajax } from "discourse/lib/ajax";
 import { action } from "@ember/object";
+import { ajax } from "discourse/lib/ajax";
+import I18n from "I18n";
 
 export default class AnonymousFeedbackController extends Controller {
+  @tracked unlocked = false;
+  @tracked sending = false;
+  @tracked sent = false;
+
   @tracked doorCode = "";
   @tracked subject = "";
   @tracked message = "";
-  @tracked unlocked = false;
+
   @tracked error = null;
-  @tracked sending = false;
-  @tracked sent = false;
+
+  // honeypot
+  @tracked website = "";
 
   @action
   async unlock() {
     this.error = null;
     this.sent = false;
 
+    const door = (this.doorCode || "").trim();
+    if (!door) {
+      this.error = I18n.t("anonymous_feedback.errors.invalid_code");
+      return;
+    }
+
     try {
-      await ajax("/anonymous-feedback/unlock.json", {
+      await ajax("/anonymous-feedback/unlock", {
         type: "POST",
-        data: { door_code: this.doorCode }
+        data: { door_code: door, website: this.website },
       });
+
       this.unlocked = true;
-      this.doorCode = "";
+      this.error = null;
     } catch (e) {
-      this.unlocked = false;
-      this.error = e?.jqXHR?.responseJSON?.error || "Fehler";
+      this.error =
+        e?.jqXHR?.responseJSON?.error ||
+        I18n.t("anonymous_feedback.errors.generic");
     }
   }
 
@@ -35,27 +49,32 @@ export default class AnonymousFeedbackController extends Controller {
     this.error = null;
     this.sent = false;
 
-    if (!this.subject?.trim() || !this.message?.trim()) {
-      this.error = "Bitte Betreff und Nachricht ausfüllen.";
+    const subject = (this.subject || "").trim();
+    const message = this.message || "";
+
+    if (!subject || !message) {
+      this.error = I18n.t("anonymous_feedback.errors.missing_fields");
       return;
     }
 
     this.sending = true;
     try {
-      await ajax("/anonymous-feedback.json", {
+      await ajax("/anonymous-feedback", {
         type: "POST",
-        data: {
-          subject: this.subject,
-          message: this.message
-        }
+        data: { subject, message, website: this.website },
       });
 
       this.sent = true;
+
+      // zurück zur Doorcode-Seite (wie du es willst)
       this.unlocked = false;
+      this.doorCode = "";
       this.subject = "";
       this.message = "";
     } catch (e) {
-      this.error = e?.jqXHR?.responseJSON?.error || "Fehler";
+      this.error =
+        e?.jqXHR?.responseJSON?.error ||
+        I18n.t("anonymous_feedback.errors.generic");
     } finally {
       this.sending = false;
     }

@@ -8,8 +8,8 @@ class ::AnonymousFeedbackController < ::ApplicationController
   skip_before_action :preload_json, only: %i[show unlock create], raise: false
   skip_before_action :redirect_to_login_if_required, only: %i[show unlock create], raise: false
 
-  # Für die öffentlichen POSTs (ohne eingeloggten User) am robustesten
-  skip_before_action :verify_authenticity_token, only: %i[unlock create], raise: false
+  # CSRF NICHT abschalten: Discourse ajax() sendet Token automatisch
+  # => dadurch sind die öffentlichen POSTs deutlich härter gegen CSRF.
 
   DOORCODE_MIN_INTERVAL = 2 # seconds
   DOORCODE_FAIL_BLOCKS = [
@@ -19,23 +19,36 @@ class ::AnonymousFeedbackController < ::ApplicationController
     [5, 60]       # 1 min
   ].freeze
 
-  # HTML: nur Ember-Shell
+  # HTML: Ember-Shell
   def show
     return if performed?
+    return render_not_found if feature_disabled?
     render "default/empty"
   end
 
   # JSON: Türcode prüfen und Session freischalten
   def unlock
     return if performed?
+    return render_disabled_json if feature_disabled?
 
     if params[:website].present?
-      Rails.logger.warn("[AnonymousFeedback] Honeypot triggered from IP #{request.remote_ip}")
+      # Honeypot: bewusst ohne IP-Logging (Anonymität)
       return render json: { success: false, error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
     end
 
+    door_code = params[:door_code].to_s.strip
+    expected  = SiteSetting.anonymous_feedback_door_code.to_s.strip
+
+    if door_code.blank? || expected.blank?
+      return render json: { success: false, error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+    end
+
+    # IP wird nur verwendet, um Rate-Limits pro Client zu bauen – aber NIE gespeichert.
+    # Wir hashen sie mit secret_key_base, damit weder IP noch Hash ohne Secret rückrechenbar sind.
     ip  = request.remote_ip.to_s
-    key = "anon_feedback:doorcode:#{ip}"
+    iph = Digest::SHA256.hexdigest("#{Rails.application.secret_key_base}:#{ip}")
+    key = "anon_feedback:doorcode:#{iph}"
+
     now = Time.now.to_i
 
     blocked_until = Discourse.redis.hget(key, "blocked_until").to_i
@@ -53,10 +66,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
     Discourse.redis.hset(key, "last_attempt", now)
     Discourse.redis.expire(key, 86_400)
 
-    door_code = params[:door_code].to_s
-    expected  = SiteSetting.anonymous_feedback_door_code.to_s
-
-    ok = expected.present? &&
+    ok =
       ActiveSupport::SecurityUtils.secure_compare(
         ::Digest::SHA256.hexdigest(door_code),
         ::Digest::SHA256.hexdigest(expected)
@@ -67,23 +77,22 @@ class ::AnonymousFeedbackController < ::ApplicationController
       block_seconds = DOORCODE_FAIL_BLOCKS.find { |threshold, _| fails >= threshold }&.last
       Discourse.redis.hset(key, "blocked_until", now + block_seconds) if block_seconds
 
-      Rails.logger.warn("[AnonymousFeedback] Failed unlock attempt from IP #{ip} (#{fails} fails)")
+      # bewusst ohne IP / Hash Logging (Anonymität)
       return render json: { success: false, error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
     end
 
     Discourse.redis.del(key)
     session[:anon_feedback_unlocked] = true
-    Rails.logger.info("[AnonymousFeedback] Successful unlock from IP #{ip}")
 
-    return render json: { success: true }, status: 200
+    render json: { success: true }, status: 200
   end
 
-  # JSON: Nachricht als PM an Gruppe senden
+  # JSON: Feedback senden (PM an Gruppe)
   def create
     return if performed?
+    return render_disabled_json if feature_disabled?
 
     if params[:website].present?
-      Rails.logger.warn("[AnonymousFeedback] Honeypot triggered in create from IP #{request.remote_ip}")
       return render json: { success: false, error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
     end
 
@@ -91,20 +100,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
       return render json: { success: false, error: I18n.t("anonymous_feedback.errors.not_unlocked") }, status: 403
     end
 
-    limit_per_hour = SiteSetting.anonymous_feedback_rate_limit_per_hour.to_i
-    if limit_per_hour > 0
-      ip = request.remote_ip.to_s
-      rl_key = "anon_feedback:post:ip:#{ip}"
-
-      count = Discourse.redis.incr(rl_key)
-      Discourse.redis.expire(rl_key, 3600) if count == 1
-
-      if count >= limit_per_hour
-        ttl = Discourse.redis.ttl(rl_key).to_i
-        ttl = 3600 if ttl <= 0
-        return render json: { success: false, error: I18n.t("anonymous_feedback.errors.post_rate_limited", seconds: ttl) }, status: 429
-      end
-    end
+    enforce_global_rate_limit!
 
     subject = params[:subject].to_s.strip
     message = params[:message].to_s
@@ -120,33 +116,59 @@ class ::AnonymousFeedbackController < ::ApplicationController
 
     group_name = SiteSetting.anonymous_feedback_target_group.to_s.strip
     if group_name.blank?
-      Rails.logger.error("[AnonymousFeedback] Target group not configured")
       return render json: { success: false, error: I18n.t("anonymous_feedback.errors.group_not_configured") }, status: 500
     end
 
     group = Group.find_by(name: group_name)
     unless group
-      Rails.logger.error("[AnonymousFeedback] Target group '#{group_name}' does not exist")
       return render json: { success: false, error: I18n.t("anonymous_feedback.errors.group_not_found") }, status: 500
     end
 
-    begin
-      PostCreator.create!(
-        Discourse.system_user,
-        title: subject,
-        raw: message,
-        archetype: Archetype.private_message,
-        target_group_names: [group_name]
-      )
+    PostCreator.create!(
+      Discourse.system_user,
+      title: subject,
+      raw: message,
+      archetype: Archetype.private_message,
+      target_group_names: [group_name]
+    )
 
-      session.delete(:anon_feedback_unlocked)
+    # Nach einem erfolgreichen Send muss erneut entsperrt werden (dein gewünschtes Verhalten)
+    session.delete(:anon_feedback_unlocked)
 
-      Rails.logger.info("[AnonymousFeedback] Successfully created PM to group '#{group_name}' from IP #{request.remote_ip}")
-      return render json: { success: true }, status: 200
-    rescue => e
-      Rails.logger.error("[AnonymousFeedback] Failed to create PM: #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-      return render json: { success: false, error: I18n.t("anonymous_feedback.errors.send_failed") }, status: 500
+    render json: { success: true }, status: 200
+  rescue RateLimited => e
+    render json: { success: false, error: e.message }, status: 429
+  rescue => _e
+    # keine Details loggen, um Anonymität zu bewahren
+    render json: { success: false, error: I18n.t("anonymous_feedback.errors.send_failed") }, status: 500
+  end
+
+  private
+
+  def feature_disabled?
+    # 0 = komplett aus (deine Vorgabe)
+    SiteSetting.anonymous_feedback_rate_limit_per_hour.to_i <= 0
+  end
+
+  def render_disabled_json
+    render json: { success: false, error: I18n.t("anonymous_feedback.errors.disabled") }, status: 403
+  end
+
+  def enforce_global_rate_limit!
+    limit_per_hour = SiteSetting.anonymous_feedback_rate_limit_per_hour.to_i
+    return if limit_per_hour <= 0 # wird vorher abgefangen, aber safe
+
+    key = "anon_feedback:global:post:hour"
+
+    count = Discourse.redis.incr(key)
+    Discourse.redis.expire(key, 3600) if count == 1
+
+    if count > limit_per_hour
+      ttl = Discourse.redis.ttl(key).to_i
+      ttl = 3600 if ttl <= 0
+      raise RateLimited.new(I18n.t("anonymous_feedback.errors.post_rate_limited", seconds: ttl))
     end
   end
+
+  class RateLimited < StandardError; end
 end

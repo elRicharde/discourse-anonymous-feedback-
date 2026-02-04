@@ -7,19 +7,23 @@ plugins:
     default: "CHANGE_TO_PASSCODE"
     client: false
     secret: true
+    type: text
 
   anonymous_feedback_target_group:
     default: "heartcare"
     client: false
+    type: text
 
   anonymous_feedback_rate_limit_per_hour:
     default: 5
     min: 0
     max: 100
     client: false
+    type: integer
 
   anonymous_feedback_max_message_length:
-    default: 10000
+    default: 30000
     min: 500
     max: 50000
     client: false
+    type: integer

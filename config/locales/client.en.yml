@@ -1,0 +1,12 @@
+en:
+  js:
+    anonymous_feedback:
+      title: "Anonymous Feedback"
+      subtitle: "No login required. Enter the door code first, then write your message."
+      door_code_label: "Door code"
+      subject_label: "Subject"
+      message_label: "Message"
+      next: "Continue"
+      send: "Send"
+      sending: "Sending..."
+      sent: "Sent."

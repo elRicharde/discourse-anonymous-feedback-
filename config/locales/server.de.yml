@@ -1,43 +1,23 @@
 de:
-  site_settings:
-
-    anonymous_feedback_rate_limit_per_hour: "Maximale Anzahl an Einsendungen pro IP und Stunde"
-    anonymous_feedback_rate_limit_per_hour_description: "Maximale Anzahl an Einsendungen pro IP und Stunde"
-    
-    anonymous_feedback_max_message_length: "Maximale Länge der anonymen Nachricht in Zeichen inkl. Leerzeichen"
-    anonymous_feedback_max_message_length_description: >
-      Maximale Länge der anonymen Nachricht in Zeichen.
-      Leerzeichen und Zeilenumbrüche zählen mit.
-
   anonymous_feedback:
-    errors:
-      invalid_code: "Falscher Türcode. Bitte erneut versuchen."
-      rate_limited: "Zu viele Versuche. Bitte warte %{seconds}s und versuche es erneut."
-      post_rate_limited: "Zu viele Nachrichten in kurzer Zeit. Bitte warte %{seconds}s und versuche es erneut."
-      missing_fields: "Bitte fülle alle Pflichtfelder aus."
-      too_long: "Die Nachricht ist zu lang. Bitte kürze sie."
-      not_unlocked: "Zugriff verweigert. Bitte gib zuerst den Türcode ein."
-      group_not_configured: "Zielgruppe ist nicht konfiguriert. Bitte kontaktiere einen Administrator."
-      group_not_found: "Die konfigurierte Zielgruppe existiert nicht. Bitte kontaktiere einen Administrator."
-      send_failed: "Fehler beim Senden der Nachricht. Bitte versuche es später erneut."
+    site_settings:
+      anonymous_feedback_door_code: "Türcode für das anonyme Feedback-Formular"
+      anonymous_feedback_target_group: "Gruppenname, an den das Feedback als PN gesendet wird"
+      anonymous_feedback_rate_limit_per_hour: "Globales Limit: maximale Anzahl Feedbacks pro Stunde (0 = deaktiviert)"
+      anonymous_feedback_max_message_length: "Maximale Nachrichtenlänge (0 = unbegrenzt)"
 
-en:
-  site_settings:
-  
-    anonymous_feedback_rate_limit_per_hour: "Rate limit per IP and hour"
-    anonymous_feedback_rate_limit_per_hour_description: "Rate limit per IP and hour"
-    
-    anonymous_feedback_max_message_length: "Maximum length of message in characters incl. space"
-    anonymous_feedback_max_message_length_description: "Maximum length of message in characters incl. space"
 
-  anonymous_feedback:
     errors:
-      invalid_code: "Invalid door code. Please try again."
-      rate_limited: "Failed too often. Please wait %{seconds}s and try again."
-      post_rate_limited: "Too many messages in a short period of time. Please wait %{seconds}s and try again."
-      missing_fields: "Please fill in all required fields."
-      too_long: "The message is too long. Please shorten it."
-      not_unlocked: "Access denied. Please enter the door code first."
-      group_not_configured: "Target group is not configured. Please contact an administrator."
-      group_not_found: "The configured target group does not exist. Please contact an administrator."
-      send_failed: "Error sending message. Please try again later."
+      disabled: "Das Feedback-Formular ist deaktiviert."
+      invalid_code: "Code falsch."
+      not_unlocked: "Bitte zuerst den Türcode eingeben."
+      rate_limited: "Bitte warten (%{seconds}s) und erneut versuchen."
+      post_rate_limited: "Zu viele Nachrichten. Bitte warten (%{seconds}s)."
+      missing_fields: "Bitte Betreff und Nachricht ausfüllen."
+      too_long: "Nachricht ist zu lang."
+      group_not_configured: "Zielgruppe ist nicht konfiguriert."
+      group_not_found: "Zielgruppe existiert nicht."
+      send_failed: "Senden fehlgeschlagen."
+      generic: "Fehler."
+
+

@@ -1,53 +1,67 @@
-<div class="wrap">
-  <h1>Anonymes Feedback</h1>
-  <p>Kein Login nötig. Erst Türcode eingeben, danach Nachricht verfassen.</p>
+<div class="wrap anon-feedback-page">
+  <h1>{{i18n "anonymous_feedback.title"}}</h1>
+  <p>{{i18n "anonymous_feedback.subtitle"}}</p>
 
   {{#if this.error}}
     <div class="alert alert-error">{{this.error}}</div>
   {{/if}}
 
   {{#if this.sent}}
-    <div class="alert alert-success">Gesendet.</div>
+    <div class="alert alert-success">{{i18n "anonymous_feedback.sent"}}</div>
   {{/if}}
 
   {{#unless this.unlocked}}
     <div class="control-group">
-      <label class="control-label">Türcode</label>
+      <label class="control-label">{{i18n "anonymous_feedback.door_code_label"}}</label>
       <div class="controls">
         <Input
           @value={{this.doorCode}}
           @type="password"
-          class="input-xxlarge"
+          class="input-xxlarge anon-feedback-input"
           autocomplete="one-time-code"
         />
       </div>
     </div>
 
-    <button type="button" class="btn btn-primary" {{on "click" this.unlock}}>
-      Weiter
-    </button>
+    {{!-- Honeypot --}}
+    <Input @value={{this.website}} class="anon-feedback-honeypot" @type="text" />
+
+    <div class="anon-feedback-actions">
+      <button type="button" class="btn btn-primary" {{on "click" this.unlock}}>
+        {{i18n "anonymous_feedback.next"}}
+      </button>
+    </div>
   {{else}}
     <div class="control-group">
-      <label class="control-label">Betreff</label>
+      <label class="control-label">{{i18n "anonymous_feedback.subject_label"}}</label>
       <div class="controls">
-        <Input @value={{this.subject}} class="input-xxlarge" />
+        <Input @value={{this.subject}} class="input-xxlarge anon-feedback-input" />
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">Nachricht</label>
+      <label class="control-label">{{i18n "anonymous_feedback.message_label"}}</label>
       <div class="controls">
-        <Textarea @value={{this.message}} class="input-xxlarge" rows="8" />
+        <Textarea @value={{this.message}} class="anon-feedback-textarea" rows="8" />
       </div>
     </div>
 
-    <button
-      type="button"
-      class="btn btn-primary"
-      disabled={{this.sending}}
-      {{on "click" this.send}}
-    >
-      {{#if this.sending}}Sende...{{else}}Senden{{/if}}
-    </button>
+    {{!-- Honeypot --}}
+    <Input @value={{this.website}} class="anon-feedback-honeypot" @type="text" />
+
+    <div class="anon-feedback-actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        disabled={{this.sending}}
+        {{on "click" this.send}}
+      >
+        {{#if this.sending}}
+          {{i18n "anonymous_feedback.sending"}}
+        {{else}}
+          {{i18n "anonymous_feedback.send"}}
+        {{/if}}
+      </button>
+    </div>
   {{/unless}}
 </div>
