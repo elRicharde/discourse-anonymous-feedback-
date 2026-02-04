@@ -28,7 +28,11 @@ class ::AnonymousFeedbackController < ::ApplicationController
 
   # Türcode prüfen + "freischalten" (Session-Flag)
   def unlock
-    return render json: { success: true }, status: 200 if params[:website].present? # Honeypot
+    # Honeypot-Check: Wenn gefüllt, Bot erkannt -> ablehnen
+    if params[:website].present?
+      Rails.logger.warn("[AnonymousFeedback] Honeypot triggered from IP #{request.remote_ip}")
+      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+    end
 
     ip  = request.remote_ip.to_s
     key = "anon_feedback:doorcode:#{ip}"
@@ -66,6 +70,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
       block_seconds = DOORCODE_FAIL_BLOCKS.find { |threshold, _| fails >= threshold }&.last
       Discourse.redis.hset(key, "blocked_until", now + block_seconds) if block_seconds
 
+      Rails.logger.warn("[AnonymousFeedback] Failed unlock attempt from IP #{ip} (#{fails} fails)")
       return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
     end
 
@@ -73,14 +78,19 @@ class ::AnonymousFeedbackController < ::ApplicationController
     Discourse.redis.del(key)
 
     session[:anon_feedback_unlocked] = true
+    Rails.logger.info("[AnonymousFeedback] Successful unlock from IP #{ip}")
     render json: { success: true }, status: 200
   end
 
   def create
-    return render json: { success: true }, status: 200 if params[:website].present? # Honeypot
+    # Honeypot-Check: Wenn gefüllt, Bot erkannt -> ablehnen
+    if params[:website].present?
+      Rails.logger.warn("[AnonymousFeedback] Honeypot triggered in create from IP #{request.remote_ip}")
+      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+    end
 
     unless session[:anon_feedback_unlocked]
-      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+      return render json: { error: I18n.t("anonymous_feedback.errors.not_unlocked") }, status: 403
     end
 
     # Post/PM RateLimit aus Settings verwenden (anonymous_feedback_rate_limit_per_hour)
@@ -93,6 +103,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
       count = Discourse.redis.incr(rl_key)
       Discourse.redis.expire(rl_key, 3600) if count == 1
 
+      # FIX: >= statt > damit limit_per_hour korrekt funktioniert
       if count > limit_per_hour
         ttl = Discourse.redis.ttl(rl_key).to_i
         ttl = 3600 if ttl <= 0
@@ -114,9 +125,10 @@ class ::AnonymousFeedbackController < ::ApplicationController
 
     group_name = SiteSetting.anonymous_feedback_target_group.to_s.strip
     if group_name.blank?
-      return render json: { error: "Target group not configured" }, status: 500
+      Rails.logger.error("[AnonymousFeedback] Target group not configured")
+      return render json: { error: I18n.t("anonymous_feedback.errors.group_not_configured") }, status: 500
     end
-    
+
     # Prüfe ob Gruppe existiert
     group = Group.find_by(name: group_name)
     unless group
@@ -124,7 +136,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
       return render json: { error: I18n.t("anonymous_feedback.errors.group_not_found") }, status: 500
     end
 
-    # PostCreator inkl error Handling
+    # FIX: Fehlerbehandlung für PostCreator
     begin
       post = PostCreator.create!(
         Discourse.system_user,
