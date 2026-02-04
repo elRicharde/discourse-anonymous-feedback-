@@ -13,6 +13,7 @@ de:
     errors:
       invalid_code: "Falscher Türcode. Bitte erneut versuchen."
       rate_limited: "Zu viele Versuche. Bitte warte %{seconds}s und versuche es erneut."
+      post_rate_limited: "Zu viele Nachrichten in kurzer Zeit. Bitte warte %{seconds}s und versuche es erneut."
 
 en:
   site_settings:
@@ -27,3 +28,4 @@ en:
     errors:
       invalid_code: "Invalid door code. Please try again."
       rate_limited: "failed to often. Please wait %{seconds}s and try again."
+      post_rate_limited: "Too many messages in a short period of time. Please wait %{seconds}s and try again."
