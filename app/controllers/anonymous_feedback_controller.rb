@@ -116,7 +116,15 @@ class ::AnonymousFeedbackController < ::ApplicationController
     if group_name.blank?
       return render json: { error: "Target group not configured" }, status: 500
     end
+    
+    # Prüfe ob Gruppe existiert
+    group = Group.find_by(name: group_name)
+    unless group
+      Rails.logger.error("[AnonymousFeedback] Target group '#{group_name}' does not exist")
+      return render json: { error: I18n.t("anonymous_feedback.errors.group_not_found") }, status: 500
+    end
 
+    # PostCreator inkl error Handling
     begin
       post = PostCreator.create!(
         Discourse.system_user,
@@ -125,8 +133,10 @@ class ::AnonymousFeedbackController < ::ApplicationController
         archetype: Archetype.private_message,
         target_group_names: [group_name]
       )
-      
+
+      # nach erfolgreichem Senden wieder "sperren"
       session.delete(:anon_feedback_unlocked)
+
       Rails.logger.info("[AnonymousFeedback] Successfully created PM to group '#{group_name}' from IP #{request.remote_ip}")
       render json: { success: true }, status: 200
     rescue => e
@@ -134,10 +144,5 @@ class ::AnonymousFeedbackController < ::ApplicationController
       Rails.logger.error(e.backtrace.join("\n"))
       render json: { error: I18n.t("anonymous_feedback.errors.send_failed") }, status: 500
     end
-
-    # nach erfolgreichem Senden wieder "sperren"
-    session.delete(:anon_feedback_unlocked)
-
-    render json: { success: true }, status: 200
   end
 end
