@@ -9,6 +9,9 @@ after_initialize do
   module ::AnonymousFeedback
     PLUGIN_NAME = "discourse-anonymous-feedback"
   end
+  register_asset "javascripts/discourse/anonymous-feedback.js"
+end
+
 
   # Load controller
   require_dependency File.expand_path("../app/controllers/anonymous_feedback_controller.rb", __FILE__)
