@@ -11,24 +11,37 @@ class ::AnonymousFeedbackController < ::ApplicationController
   def index
     render :index, layout: false
   end
-
+  
   def create
-    # Honeypot: wenn gesetzt -> Bot -> tun als ob ok
-    return redirect_to "/anonymous-feedback?sent=1" if params[:website].present?
-
+    # Honeypot
+    return render json: { success: true }, status: 200 if params[:website].present?
+  
     door_code = params[:door_code].to_s
     subject   = params[:subject].to_s.strip
     message   = params[:message].to_s
-
+  
     unless door_code.present? && subject.present? && message.present?
-      return render plain: "Fehlende Felder", status: 400
+      return render json: { error: I18n.t("anonymous_feedback.errors.missing_fields") }, status: 400
     end
-
+  
+    expected = SiteSetting.anonymous_feedback_door_code.to_s
+  
+    # Doorcode prüfen (konstantzeit-compare)
+    ok = expected.present? &&
+         ActiveSupport::SecurityUtils.secure_compare(
+           ::Digest::SHA256.hexdigest(door_code),
+           ::Digest::SHA256.hexdigest(expected)
+         )
+  
+    unless ok
+      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+    end
+  
     group_name = SiteSetting.anonymous_feedback_target_group.to_s.strip
     if group_name.blank?
-      return render plain: "Target group not configured", status: 500
+      return render json: { error: "Target group not configured" }, status: 500
     end
-
+  
     PostCreator.create!(
       Discourse.system_user,
       title: subject,
@@ -36,7 +49,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
       archetype: Archetype.private_message,
       target_group_names: [group_name]
     )
-
-    redirect_to "/anonymous-feedback?sent=1"
+  
+    render json: { success: true }, status: 200
   end
 end
