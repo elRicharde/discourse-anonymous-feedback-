@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ::AnonymousFeedbackController < ::ApplicationController
-  requires_plugin ::AnonymousFeedback::PLUGIN_NAME
+  requires_plugin "discourse-anonymous-feedback"
 
   skip_before_action :check_xhr, only: [:index, :create], raise: false
   skip_before_action :preload_json, only: [:index, :create], raise: false
@@ -18,7 +18,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
   
     door_code = params[:door_code].to_s
     subject   = params[:subject].to_s.strip
-    message   = params[:message].to_s
+    message = params[:message].to_s.strip
   
     unless door_code.present? && subject.present? && message.present?
       return render json: { error: I18n.t("anonymous_feedback.errors.missing_fields") }, status: 400
