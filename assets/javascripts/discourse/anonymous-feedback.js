@@ -1,40 +1,36 @@
 import { ajax } from "discourse/lib/ajax";
+import { apiInitializer } from "discourse/lib/api";
 
-function showError(msg) {
-  const el = document.getElementById("af_error");
-  if (el) {
-    el.innerText = msg;
-    el.style.display = "block";
-  }
-}
-
-function unlock() {
-  const input = document.getElementById("af_door_code");
-  if (!input) {
-    console.error("door code input not found");
-    return;
-  }
-
-  ajax("/anonymous-feedback/unlock", {
-    type: "POST",
-    data: {
-      door_code: input.value
-    }
-  })
-    .then(() => {
-      window.location.reload();
-    })
-    .catch((e) => {
-      showError(e?.jqXHR?.responseJSON?.error || "Fehler");
-    });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+function bindAnonymousFeedback() {
   const btn = document.getElementById("af_unlock_btn");
-  if (!btn) {
-    console.warn("unlock button not found");
+  const input = document.getElementById("af_door_code");
+  const errorBox = document.getElementById("af_error");
+
+  if (!btn || !input) {
+    // Seite ist (noch) nicht unsere
     return;
   }
 
-  btn.addEventListener("click", unlock);
+  btn.addEventListener("click", () => {
+    ajax("/anonymous-feedback/unlock", {
+      type: "POST",
+      data: { door_code: input.value }
+    })
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((e) => {
+        if (errorBox) {
+          errorBox.innerText =
+            e?.jqXHR?.responseJSON?.error || "Fehler";
+          errorBox.style.display = "block";
+        }
+      });
+  });
+}
+
+export default apiInitializer("0.8", (api) => {
+  api.onPageChange(() => {
+    bindAnonymousFeedback();
+  });
 });
