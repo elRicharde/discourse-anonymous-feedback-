@@ -9,6 +9,10 @@ de:
       Maximale Länge der anonymen Nachricht in Zeichen.
       Leerzeichen und Zeilenumbrüche zählen mit.
 
+  anonymous_feedback:
+    errors:
+      invalid_code: "Falscher Türcode. Bitte erneut versuchen."
+
 en:
   site_settings:
   
@@ -17,3 +21,7 @@ en:
     
     anonymous_feedback_max_message_length: "maximum length of message in characters incl. space"
     anonymous_feedback_max_message_length_description: "maximum length of message in characters incl. space"
+
+  anonymous_feedback:
+    errors:
+      invalid_code: "Invalid door code. Please try again."
