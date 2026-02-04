@@ -12,6 +12,7 @@ de:
   anonymous_feedback:
     errors:
       invalid_code: "Falscher Türcode. Bitte erneut versuchen."
+      rate_limited: "Zu viele Versuche. Bitte warte %{seconds}s und versuche es erneut."
 
 en:
   site_settings:
@@ -25,3 +26,4 @@ en:
   anonymous_feedback:
     errors:
       invalid_code: "Invalid door code. Please try again."
+      rate_limited: "failed to often. Please wait %{seconds}s and try again."
