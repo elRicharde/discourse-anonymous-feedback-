@@ -1,55 +1,84 @@
-<div class="wrap anon-feedback-page">
-  <h1>{{i18n "anonymous_feedback.title"}}</h1>
-  <p>{{i18n "anonymous_feedback.subtitle"}}</p>
+<style>
+  /* Wider + mobile friendly */
+  .af-wrap {
+    max-width: 1100px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+  .af-input, .af-textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .af-textarea {
+    min-height: 10rem;
+    resize: vertical;
+  }
+  .af-hidden {
+    display: none !important;
+  }
+  .af-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+</style>
+
+<div class="af-wrap">
+  <h1>{{this.title}}</h1>
+  <p>{{this.intro}}</p>
 
   {{#if this.error}}
     <div class="alert alert-error">{{this.error}}</div>
   {{/if}}
 
   {{#if this.sent}}
-    <div class="alert alert-success">{{i18n "anonymous_feedback.sent"}}</div>
+    <div class="alert alert-success">{{i18n "js.anonymous_feedback.sent"}}</div>
   {{/if}}
+
+  {{!-- Honeypot: must stay invisible for humans --}}
+  <Input
+    @value={{this.website}}
+    class="af-hidden"
+    @type="text"
+    autocomplete="off"
+    tabindex="-1"
+  />
 
   {{#unless this.unlocked}}
     <div class="control-group">
-      <label class="control-label">{{i18n "anonymous_feedback.door_code_label"}}</label>
+      <label class="control-label">{{i18n "js.anonymous_feedback.doorcode_label"}}</label>
       <div class="controls">
         <Input
           @value={{this.doorCode}}
           @type="password"
-          class="input-xxlarge anon-feedback-input"
+          class="af-input"
           autocomplete="one-time-code"
         />
       </div>
     </div>
 
-    {{!-- Honeypot --}}
-    <Input @value={{this.website}} class="anon-feedback-honeypot" @type="text" />
-
-    <div class="anon-feedback-actions">
+    <div class="af-actions">
       <button type="button" class="btn btn-primary" {{on "click" this.unlock}}>
-        {{i18n "anonymous_feedback.next"}}
+        {{i18n "js.anonymous_feedback.btn_next"}}
       </button>
     </div>
   {{else}}
     <div class="control-group">
-      <label class="control-label">{{i18n "anonymous_feedback.subject_label"}}</label>
+      <label class="control-label">{{i18n "js.anonymous_feedback.subject_label"}}</label>
       <div class="controls">
-        <Input @value={{this.subject}} class="input-xxlarge anon-feedback-input" />
+        <Input @value={{this.subject}} class="af-input" />
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">{{i18n "anonymous_feedback.message_label"}}</label>
+      <label class="control-label">{{i18n "js.anonymous_feedback.message_label"}}</label>
       <div class="controls">
-        <Textarea @value={{this.message}} class="anon-feedback-textarea" rows="8" />
+        <Textarea @value={{this.message}} class="af-textarea" />
       </div>
     </div>
 
-    {{!-- Honeypot --}}
-    <Input @value={{this.website}} class="anon-feedback-honeypot" @type="text" />
-
-    <div class="anon-feedback-actions">
+    <div class="af-actions">
       <button
         type="button"
         class="btn btn-primary"
@@ -57,9 +86,9 @@
         {{on "click" this.send}}
       >
         {{#if this.sending}}
-          {{i18n "anonymous_feedback.sending"}}
+          {{i18n "js.anonymous_feedback.sending"}}
         {{else}}
-          {{i18n "anonymous_feedback.send"}}
+          {{i18n "js.anonymous_feedback.btn_send"}}
         {{/if}}
       </button>
     </div>

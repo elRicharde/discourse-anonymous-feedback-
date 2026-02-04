@@ -1,16 +1,32 @@
 plugins:
+
+  # =====================================================
+  # Global plugin toggles
+  # =====================================================
+
   anonymous_feedback_enabled:
-    default: true
+    default: false
     client: false
+    type: bool
+
+  white_board_enabled:
+    default: false
+    client: false
+    type: bool
+
+
+  # =====================================================
+  # ---- Anonymous Feedback (af) ----
+  # =====================================================
 
   anonymous_feedback_door_code:
-    default: "CHANGE_TO_PASSCODE"
+    default: "ChangeToYourSecret"
     client: false
     secret: true
     type: text
 
   anonymous_feedback_target_group:
-    default: "heartcare"
+    default: ""
     client: false
     type: text
 
@@ -27,3 +43,57 @@ plugins:
     max: 50000
     client: false
     type: integer
+
+  anonymous_feedback_hmac_rotation_hours:
+    default: 4
+    min: 1
+    max: 72
+    client: false
+    type: integer
+
+  anonymous_feedback_bot_username:
+    default: ""
+    client: false
+    type: text
+
+
+  # =====================================================
+  # ---- White Board (wb) ----
+  # =====================================================
+
+  white_board_door_code:
+    default: "ChangeToYourSecret"
+    client: false
+    secret: true
+    type: text
+
+  white_board_target_group:
+    default: ""
+    client: false
+    type: text
+
+  white_board_rate_limit_per_hour:
+    default: 5
+    min: 0
+    max: 100
+    client: false
+    type: integer
+
+  white_board_max_message_length:
+    default: 30000
+    min: 500
+    max: 50000
+    client: false
+    type: integer
+
+  white_board_hmac_rotation_hours:
+    default: 4
+    min: 1
+    max: 72
+    client: false
+    type: integer
+
+  white_board_bot_username:
+    default: ""
+    client: false
+    type: text

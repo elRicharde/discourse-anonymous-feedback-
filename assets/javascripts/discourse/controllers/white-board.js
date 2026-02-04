@@ -4,23 +4,21 @@ import { action } from "@ember/object";
 import { ajax } from "discourse/lib/ajax";
 import I18n from "discourse-i18n";
 
-export default class AnonymousFeedbackController extends Controller {
-  // UI state
+export default class WhiteBoardController extends Controller {
   @tracked unlocked = false;
   @tracked sending = false;
   @tracked sent = false;
   @tracked error = null;
 
-  // form fields
   @tracked doorCode = "";
   @tracked subject = "";
   @tracked message = "";
 
-  // honeypot (MUST stay empty)
+  // honeypot
   @tracked website = "";
 
   get title() {
-    return I18n.t("js.anonymous_feedback.title_af");
+    return I18n.t("js.anonymous_feedback.title_wb");
   }
 
   get intro() {
@@ -39,18 +37,18 @@ export default class AnonymousFeedbackController extends Controller {
     }
 
     try {
-      await ajax("/anonymous-feedback/unlock", {
+      await ajax("/white-board/unlock", {
         type: "POST",
         data: {
           door_code: code,
-          website: this.website, // honeypot
+          website: this.website,
         },
       });
 
       this.unlocked = true;
       this.subject = "";
       this.message = "";
-      this.website = ""; // keep empty
+      this.website = "";
     } catch (e) {
       this.error =
         e?.jqXHR?.responseJSON?.error ||
@@ -73,16 +71,15 @@ export default class AnonymousFeedbackController extends Controller {
 
     this.sending = true;
     try {
-      await ajax("/anonymous-feedback", {
+      await ajax("/white-board", {
         type: "POST",
         data: {
           subject,
           message,
-          website: this.website, // honeypot
+          website: this.website,
         },
       });
 
-      // One unlock = one send (your desired flow)
       this.sent = true;
       this.unlocked = false;
       this.doorCode = "";

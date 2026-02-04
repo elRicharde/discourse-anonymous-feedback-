@@ -1,11 +1,11 @@
 de:
   anonymous_feedback:
+
     site_settings:
       anonymous_feedback_door_code: "Türcode für das anonyme Feedback-Formular"
       anonymous_feedback_target_group: "Gruppenname, an den das Feedback als PN gesendet wird"
       anonymous_feedback_rate_limit_per_hour: "Globales Limit: maximale Anzahl Feedbacks pro Stunde (0 = deaktiviert)"
       anonymous_feedback_max_message_length: "Maximale Nachrichtenlänge (0 = unbegrenzt)"
-
 
     errors:
       disabled: "Das Feedback-Formular ist deaktiviert."

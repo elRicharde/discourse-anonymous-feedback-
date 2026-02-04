@@ -1,12 +1,23 @@
 de:
   js:
     anonymous_feedback:
-      title: "Anonymes Feedback"
-      subtitle: "Kein Login nötig. Erst Türcode eingeben, danach Nachricht verfassen."
-      door_code_label: "Türcode"
+      title_af: "Anonymes Feedback"
+      title_wb: "White Board"
+      intro: "Kein Login nötig. Erst Türcode eingeben, danach Nachricht verfassen."
+      doorcode_label: "Türcode"
       subject_label: "Betreff"
       message_label: "Nachricht"
-      next: "Weiter"
-      send: "Senden"
+      btn_next: "Weiter"
+      btn_send: "Senden"
       sending: "Sende..."
       sent: "Gesendet."
+      back_to_code: "Zurück"
+      errors:
+        generic: "Fehler"
+        invalid_code: "Code falsch."
+        not_unlocked: "Bitte zuerst Türcode eingeben."
+        missing_fields: "Bitte Betreff und Nachricht ausfüllen."
+        too_long: "Nachricht ist zu lang."
+        rate_limited: "Zu viele Versuche. Bitte in %{seconds}s erneut."
+        post_rate_limited: "Zu viele Nachrichten. Bitte in %{seconds}s erneut."
+        disabled: "Dieses Formular ist deaktiviert."
