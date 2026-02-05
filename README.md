@@ -1,4 +1,5 @@
 # Discourse Anonymous Feedback & White Board
+*Für deutsche Beschreibung nach unten Scrollen*
 
 This Discourse plugin provides two independent, anonymous posting forms: "Anonymous Feedback" and "White Board". Both forms are protected by a "door code" (a simple password) and allow users without an account to send a private message to a pre-configured user group.
 
