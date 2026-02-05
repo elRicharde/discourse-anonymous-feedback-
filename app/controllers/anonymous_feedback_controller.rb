@@ -34,7 +34,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
 
     # Honeypot: bots fill hidden field
     if params[:website].present?
-      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+      return render_json_error("invalid_code", 403)
     end
 
     # Global limiter (no IP, no hash): protects against botnets rotating IPs.
@@ -43,12 +43,12 @@ class ::AnonymousFeedbackController < ::ApplicationController
     #   >0 => max unlock attempts per hour, global for this endpoint
     limit = setting_int(:rate_limit_per_hour)
     if limit <= 0
-      return render json: { error: I18n.t("anonymous_feedback.errors.disabled") }, status: 403
+      return render_json_error("disabled", 403)
     end
 
     unless global_rate_limit_ok?(:unlock, limit)
       wait_s = global_rate_limit_ttl(:unlock)
-      return render json: { error: I18n.t("anonymous_feedback.errors.rate_limited", seconds: wait_s) }, status: 429
+      return render_json_error("rate_limited", 429, seconds: wait_s)
     end
 
     # Per-client (HMAC) lockout bucket. No IP is stored. We derive an anon id:
@@ -62,13 +62,13 @@ class ::AnonymousFeedbackController < ::ApplicationController
     blocked_until = Discourse.redis.hget(key, "blocked_until").to_i
     if blocked_until > now
       wait_s = blocked_until - now
-      return render json: { error: I18n.t("anonymous_feedback.errors.rate_limited", seconds: wait_s) }, status: 429
+      return render_json_error("rate_limited", 429, seconds: wait_s)
     end
 
     last_attempt = Discourse.redis.hget(key, "last_attempt").to_i
     if last_attempt > 0 && (now - last_attempt) < DOORCODE_MIN_INTERVAL
       wait_s = DOORCODE_MIN_INTERVAL - (now - last_attempt)
-      return render json: { error: I18n.t("anonymous_feedback.errors.rate_limited", seconds: wait_s) }, status: 429
+      return render_json_error("rate_limited", 429, seconds: wait_s)
     end
 
     Discourse.redis.hset(key, "last_attempt", now)
@@ -89,7 +89,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
       fails = Discourse.redis.hincrby(key, "fail_count", 1)
       block_seconds = DOORCODE_FAIL_BLOCKS.find { |threshold, _| fails >= threshold }&.last
       Discourse.redis.hset(key, "blocked_until", now + block_seconds) if block_seconds
-      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+      return render_json_error("invalid_code", 403)
     end
 
     # success
@@ -104,44 +104,44 @@ class ::AnonymousFeedbackController < ::ApplicationController
 
     # Honeypot
     if params[:website].present?
-      return render json: { error: I18n.t("anonymous_feedback.errors.invalid_code") }, status: 403
+      return render_json_error("invalid_code", 403)
     end
 
     unless session[session_unlock_key]
-      return render json: { error: I18n.t("anonymous_feedback.errors.not_unlocked") }, status: 403
+      return render_json_error("not_unlocked", 403)
     end
 
     # Global submit limiter (no IP, no hash)
     limit = setting_int(:rate_limit_per_hour)
     if limit <= 0
-      return render json: { error: I18n.t("anonymous_feedback.errors.disabled") }, status: 403
+      return render_json_error("disabled", 403)
     end
 
     unless global_rate_limit_ok?(:create, limit)
       wait_s = global_rate_limit_ttl(:create)
-      return render json: { error: I18n.t("anonymous_feedback.errors.post_rate_limited", seconds: wait_s) }, status: 429
+      return render_json_error("post_rate_limited", 429, seconds: wait_s)
     end
 
     subject = params[:subject].to_s.strip
     message = params[:message].to_s
 
     unless subject.present? && message.present?
-      return render json: { error: I18n.t("anonymous_feedback.errors.missing_fields") }, status: 400
+      return render_json_error("missing_fields", 400)
     end
 
     max_len = setting_int(:max_message_length)
     if max_len > 0 && message.length > max_len
-      return render json: { error: I18n.t("anonymous_feedback.errors.too_long") }, status: 400
+      return render_json_error("too_long", 400)
     end
 
     group_name = setting_str(:target_group).strip
     if group_name.blank?
-      return render json: { error: I18n.t("anonymous_feedback.errors.group_not_configured") }, status: 500
+      return render_json_error("group_not_configured", 500)
     end
 
     group = Group.find_by(name: group_name)
     unless group
-      return render json: { error: I18n.t("anonymous_feedback.errors.group_not_found") }, status: 500
+      return render_json_error("group_not_found", 500)
     end
 
     title = "#{subject_prefix}#{subject}"
@@ -162,11 +162,15 @@ class ::AnonymousFeedbackController < ::ApplicationController
     rescue => e
       # No IP logging, no content logging (anonymity). Only error class for ops.
       Rails.logger.error("[AnonymousFeedback] create failed: #{e.class}: #{e.message}")
-      render json: { error: I18n.t("anonymous_feedback.errors.send_failed") }, status: 500
+      render_json_error("send_failed", 500)
     end
   end
 
   private
+
+  def render_json_error(key, status, params = {})
+    render json: { error_key: key, error_params: params }, status: status
+  end
 
   # -------- endpoint selection (two pages, one controller) --------
   # We distinguish by path:

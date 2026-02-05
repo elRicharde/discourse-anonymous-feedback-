@@ -21,3 +21,6 @@ en:
         rate_limited: "Too many attempts. Try again in %{seconds}s."
         post_rate_limited: "Too many messages. Try again in %{seconds}s."
         disabled: "This form is disabled."
+        send_failed: "Sending failed."
+        group_not_configured: "Target group not configured."
+        group_not_found: "Target group not found."

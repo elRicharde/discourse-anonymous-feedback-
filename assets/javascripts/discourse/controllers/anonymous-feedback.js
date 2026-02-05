@@ -52,9 +52,15 @@ export default class AnonymousFeedbackController extends Controller {
       this.message = "";
       this.website = ""; // keep empty
     } catch (e) {
-      this.error =
-        e?.jqXHR?.responseJSON?.error ||
-        I18n.t("js.anonymous_feedback.errors.generic");
+      const json = e.jqXHR.responseJSON;
+      if (json?.error_key) {
+        this.error = I18n.t(
+          `js.anonymous_feedback.errors.${json.error_key}`,
+          json.error_params
+        );
+      } else {
+        this.error = I18n.t("js.anonymous_feedback.errors.generic");
+      }
     }
   }
 
@@ -90,9 +96,15 @@ export default class AnonymousFeedbackController extends Controller {
       this.message = "";
       this.website = "";
     } catch (e) {
-      this.error =
-        e?.jqXHR?.responseJSON?.error ||
-        I18n.t("js.anonymous_feedback.errors.generic");
+      const json = e.jqXHR.responseJSON;
+      if (json?.error_key) {
+        this.error = I18n.t(
+          `js.anonymous_feedback.errors.${json.error_key}`,
+          json.error_params
+        );
+      } else {
+        this.error = I18n.t("js.anonymous_feedback.errors.generic");
+      }
     } finally {
       this.sending = false;
     }
