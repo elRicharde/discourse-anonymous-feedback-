@@ -203,8 +203,8 @@ class ::AnonymousFeedbackController < ::ApplicationController
 
   def setting_int(field)
     case [kind, field]
-    when [:af, :rate_limit_global_per_hour] then SiteSetting.anonymous_feedback_rate_limit_global_per_hour.to_i
-    when [:wb, :rate_limit_global_per_hour] then SiteSetting.white_board_rate_limit_global_per_hour.to_i
+    when [:af, :rate_limit_global_per_hour] then SiteSetting.anonymous_feedback_rate_limit_per_hour.to_i
+    when [:wb, :rate_limit_global_per_hour] then SiteSetting.white_board_rate_limit_per_hour.to_i
 
     when [:af, :max_message_length] then SiteSetting.anonymous_feedback_max_message_length.to_i
     when [:wb, :max_message_length] then SiteSetting.white_board_max_message_length.to_i
