@@ -41,7 +41,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
     # Setting meaning:
     #   0  => endpoint disabled (acts like feature off)
     #   >0 => max unlock attempts per hour, global for this endpoint
-    limit = setting_int(:rate_limit_global_per_hour)
+    limit = setting_int(:rate_limit_per_hour)
     if limit <= 0
       return render json: { error: I18n.t("anonymous_feedback.errors.disabled") }, status: 403
     end
@@ -112,7 +112,7 @@ class ::AnonymousFeedbackController < ::ApplicationController
     end
 
     # Global submit limiter (no IP, no hash)
-    limit = setting_int(:rate_limit_global_per_hour)
+    limit = setting_int(:rate_limit_per_hour)
     if limit <= 0
       return render json: { error: I18n.t("anonymous_feedback.errors.disabled") }, status: 403
     end
