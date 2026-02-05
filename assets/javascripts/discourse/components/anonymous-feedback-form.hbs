@@ -41,14 +41,22 @@
     <div class="control-group">
       <label class="control-label">{{i18n "js.anonymous_feedback.subject_label"}}</label>
       <div class="controls">
-        <Input @value={{this.subject}} class="af-input" />
+        <Input
+          @value={{this.subject}}
+          class="af-input"
+          placeholder={{@subjectPlaceholder}}
+        />
       </div>
     </div>
 
     <div class="control-group">
       <label class="control-label">{{i18n "js.anonymous_feedback.message_label"}}</label>
       <div class="controls">
-        <Textarea @value={{this.message}} class="af-textarea" />
+        <Textarea
+          @value={{this.message}}
+          class="af-textarea"
+          placeholder={{@messagePlaceholder}}
+        />
       </div>
     </div>
 

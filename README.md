@@ -254,6 +254,8 @@ Nach der Installation können Sie das Plugin in den Discourse-Admin-Einstellunge
 | `... max_message_length` | Die maximale Anzahl an Zeichen, die im Nachrichtentext erlaubt sind. |
 | `... hmac_rotation_hours` | Wie oft der geheime Schlüssel für die Ratenbegrenzung rotiert. Eine kürzere Dauer setzt Brute-Force-Sperren schneller zurück, ist aber geringfügig weniger sicher. |
 | `... bot_username` | Optional. Der Benutzername des Benutzers, der die PN senden wird. Der Benutzer muss existieren. Wenn leer, wird der Systembenutzer verwendet. |
+| `... subject_placeholder` | Optional. Platzhaltertext für das Betreff-Eingabefeld. |
+| `... message_placeholder` | Optional. Platzhaltertext für das Nachrichten-Eingabefeld. |
 
 ## Funktionsweise (Technische Übersicht)
 

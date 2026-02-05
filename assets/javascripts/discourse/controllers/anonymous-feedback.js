@@ -9,4 +9,12 @@ export default class AnonymousFeedbackController extends Controller {
   get intro() {
     return I18n.t("js.anonymous_feedback.intro");
   }
+
+  get subjectPlaceholder() {
+    return this.siteSettings.anonymous_feedback_subject_placeholder;
+  }
+
+  get messagePlaceholder() {
+    return this.siteSettings.anonymous_feedback_message_placeholder;
+  }
 }

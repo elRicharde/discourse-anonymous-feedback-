@@ -56,6 +56,16 @@ plugins:
     client: false
     type: text
 
+  anonymous_feedback_subject_placeholder:
+    default: ""
+    client: true
+    type: text
+
+  anonymous_feedback_message_placeholder:
+    default: ""
+    client: true
+    type: text
+
 
   # =====================================================
   # ---- White Board (wb) ----
@@ -96,4 +106,14 @@ plugins:
   white_board_bot_username:
     default: ""
     client: false
+    type: text
+
+  white_board_subject_placeholder:
+    default: ""
+    client: true
+    type: text
+
+  white_board_message_placeholder:
+    default: ""
+    client: true
     type: text
