@@ -1,80 +1,63 @@
+> **Hinweis:** Eine deutschsprachige Dokumentation finden Sie [weiter unten](#deutsche-dokumentation).
+
 # Discourse Anonymous Feedback & White Board
-*Für deutsche Beschreibung nach unten Scrollen*
 
 This Discourse plugin provides two independent, anonymous posting forms: "Anonymous Feedback" and "White Board". Both forms are protected by a "door code" (a simple password) and allow users without an account to send a private message to a pre-configured user group.
 
-Technically, posts are submitted via a webpage without requiring a login, and can even be used in a private browsing tab. There is no possibility of tracing back the sender, as IP addresses are not logged. This plugin is designed to offer a secure and confidential channel for communication.
+Technically, posts are entered on a webpage without login and can also be used in a private browser tab. Tracing the sender is impossible because IP addresses are not logged. This plugin is designed to provide a secure and confidential communication channel.
 
 ## Why Use This Plugin?
 
-In many communities, sensitive topics or ideas require a channel for feedback that guarantees anonymity and reduces social pressure. This plugin addresses several key challenges:
+In many communities, sensitive topics or ideas require a feedback channel that guarantees anonymity and reduces social pressure. This plugin addresses several central challenges:
 
--   **Fostering Uninhibited Feedback**: It provides a safe space for users (and even non-users, if the door code is shared externally) to share honest, unfiltered opinions, concerns, or innovative ideas without fear of judgment or repercussions. This can lead to more candid and valuable input that might otherwise be withheld.
--   **Confidentiality and Trust**: By ensuring anonymity through technical measures (like HMAC-based rate limiting without IP logging), the plugin builds trust and encourages broader participation, especially for delicate subjects.
--   **Bridging Communication Gaps**: It creates an accessible communication bridge for individuals who are hesitant to post publicly or who do not have a Discourse account, thereby expanding the reach of community engagement.
--   **Structured Input**: By directing feedback to a specific private group, it ensures that sensitive information is reviewed by the appropriate team members, allowing for focused discussion and action away from public view.
--   **Simplicity for Non-Users**: The door code mechanism allows external parties or temporary visitors to provide input without the overhead of full account registration.
+-   **Fostering Uninhibited Feedback**: It offers a safe space for users (and even non-users, if the door code is shared externally) to share honest, unfiltered opinions, concerns, or innovative ideas without fear of judgment or consequences. This can lead to more open and valuable contributions that might otherwise be withheld.
+-   **Confidentiality and Trust**: By ensuring anonymity through technical measures (like HMAC-based rate limiting without IP logging), the plugin creates trust and encourages broader participation, especially in delicate topics.
+-   **Bridging Communication Gaps**: It creates an accessible communication bridge for people who are hesitant to post publicly or who do not have a Discourse account, thereby extending the reach of community engagement.
+-   **Structured Input**: Forwarding feedback to a specific private group ensures that sensitive information is reviewed by the appropriate team members, enabling focused discussion and action away from the public eye.
+-   **Simplicity for Non-Users**: The door code mechanism allows external parties or temporary visitors to contribute without the hassle of a full account registration.
 
-Ultimately, this plugin enhances community interaction by enabling a more inclusive and secure environment for critical discussions and suggestions.
+Ultimately, this plugin improves community interaction by creating a more inclusive and safer environment for critical discussions and suggestions.
+
+## How It Works (Technical Overview)
+
+The plugin was developed with a focus on anonymity and security.
+
+1.  **Access**: A user navigates to `/anonymous-feedback` or `/white-board`.
+2.  **Unlock**: The user must enter the correct door code. The server validates this code.
+    -   To prevent brute-force attacks, the server uses a rate-limiting system based on an HMAC hash of the user's IP address and a rotating secret. The IP address itself is never stored.
+    -   If the code is correct, the server sets a temporary, one-time usable flag in the user's session.
+3.  **Submit**: The user writes and sends their message.
+4.  **Create PM**: The server checks the session flag. If valid, it creates a new private message to the configured target group and posts it as the configured bot user (or system user). The session flag is then immediately deleted, so the user has to enter the door code again for any further message.
 
 ## Example Use Cases / Workflows
 
-This plugin was designed to be flexible. Here are two common workflows you can implement:
+This plugin is designed to be flexible. Here are two common workflows you can implement:
 
-### Use Case 1: The "White Board" - A Moderated Public Notice Board
+### Use Case 1: The "White Board" – A Moderated Public Blackboard
 
-This use case is for creating visibility for sensitive topics or inappropriate behavior that has been observed in the community (e.g., at events or in general interactions). For instance, making visible issues like sexism.
+This use case serves to create visibility for sensitive topics or inappropriate behavior observed in the community (e.g., at events or in general interactions). For instance, making visible issues like sexism.
 
-**The Goal**: To make important issues visible to the community without exposing the identity of the person reporting them. The focus is on the message, not the sender, and potentially not even on the individuals involved. A simple representation of situations with inappropriate behavior, without naming names, still creates visibility and raises awareness.
-
-**The Workflow**:
-1.  **Submission**: A user submits a post via the `/white-board` form. This can be accessed by members (MG), apprentices (ANW), and facilitators (FM). Only the USER "Anonymous" can create posts.
-2.  **Private Review**: The post arrives as a Private Message to the configured `target_group` (e.g., a moderation team or a "Trust & Safety" committee). It will be identifiable as a "White Board" entry.
-3.  **Vetting**: The team reviews the submission against pre-defined criteria (e.g., no personal attacks, no insults, adherence to community guidelines).
-4.  **Publication (If Approved)**: An admin is invited to the message who converts it into a public topic in a dedicated, public "White Board" category. This topic is posted using a specific, generic account (e.g., a "WhiteBoardBot" or "Anonymous" user, configured via the `bot_username` setting). The login details for this user can be shared with the reviewing group. The publication is done by the USER "Anonymous".
-5.  **Discussion Control**: The "White Board" category permissions are set so that it is visible to members/apprentices/facilitators but not commentable. Regular forum moderators are expected not to moderate this specific area; this is solely the responsibility of the designated `target_group`. There is still the question of whether the White Board should contain sub-categories (e.g., "anonymous closed" or categories specifically for `target_group` posts).
-6.  **Handling Rejections**: Since there is no way to contact the anonymous sender, it's a good practice to have a pinned topic in the "White Board" category explaining the publication criteria and the reasons why a submission might be rejected. Rules justifying non-publication should always be made public in one place in the forum.
-
-### Use Case 2: Anonymous Feedback - A Direct, Private Channel
-
-This use case is for providing a direct, confidential line of communication to a specific team for any kind of feedback (e.g., for voting feedback or other anonymous suggestions).
-
-**The Goal**: To give members and non-members a safe way to provide feedback on community matters, votes, or other topics directly to the leadership or a relevant committee.
+**The Goal**: To make important concerns visible to the community without revealing the identity of the reporting person. The focus is on the message, not the sender, and possibly not even on the specific individuals involved. A simple representation of situations with inappropriate behavior without naming names still creates visibility and raises awareness.
 
 **The Workflow**:
-1.  **Submission**: A user submits feedback via the `/anonymous-feedback` form. The subject line can help categorize the message. This post arrives with the subject prefix "Anonymous Message - dd.mm.yyyy, hh:mm:ss" to the `target_group`'s collective inbox.
-2.  **Private Delivery**: The message arrives as a Private Message to the `target_group`. It is identifiable as "Anonymous Feedback" by its subject prefix. The `target_group` then decides what to do with the message.
-3.  **Internal Handling**: The team can then discuss the feedback privately, involve other relevant parties if necessary, or decide on a course of action. This feedback might be used for voting feedback or other anonymous suggestions.
-4.  **Best Practice for Inappropriate Feedback**: If a submission is inappropriate, the team can simply delete it. You could consider posting a generic, public notice (e.g., in a "News" category) stating that "Feedback received on [Date] was not processed because it violated our community standards for respectful communication." This informs the sender without revealing any details and encourages them to re-submit in a more constructive manner. If it's a post for the White Board (identifiable by no special marking, or possibly a suffix if helpful): the mods are invited to the message, but no one replies to the message. The mods convert the message into a topic in the "White Board" category -> visible to members/apprentices/facilitators and not commentable.
+1.  **Submission**: A user submits a post via the `/white-board` form. This can be accessed by members (MG), aspirants (ANW), and facilitators (FM). Posts can only be created by the USER "Anonymous".
+2.  **Private Review**: The post arrives as a private message to the configured `target_group` (e.g., a moderation team or a "HeartCare" committee). It will be recognizable as an entry for the "White Board".
+3.  **Vetting**: The team reviews the submission based on predefined criteria (e.g., no personal accusations, no insults, adherence to community guidelines).
+4.  **Publication (if approved)**: If approved, an admin is invited to the message who converts the message into a public topic in a dedicated, public category "White Board". This topic is posted using a specific, generic account (e.g., a "WhiteBoardBot" or "Anonymous" user configured via the `bot_username` setting). The login details for this user can be made available to the "HeartCare" team. The publication is done by USER "Anonymous".
+5.  **Discussion Control**: The permissions of the "White Board" category are set so that it is visible to members, aspirants, and moderators, but not commentable. Normal forum moderators are not supposed to moderate this area; this is solely the responsibility of the designated `target_group`. There is still the question of whether the "White Board" should be in "anonymous closed" and contain further category/categories, for example, a category only for "HeartCare" posts to the "White Board" (can also be a pinned topic in the "White Board" category, but careful: "this allows HeartCare to post and reply in the anonymous area").
+6.  **Handling Rejections**: Since there is no way to contact the anonymous sender, it is good practice to have a pinned topic in the "White Board" category explaining the publication criteria and the reasons why a post might be rejected. Non-publication must be justified by rules that are always made public in one place in the forum.
 
-## Deep Dive: Anonymity & Rate Limiting (HMAC)
+### Use Case 2: Anonymous Feedback – A Direct, Private Channel
 
-A core feature of this plugin is the balance between **absolute anonymity** and **protection against abuse** (spam).
+This use case serves to provide a direct, confidential communication line to a specific team for any kind of feedback (e.g., for feedback on votes or other anonymous suggestions).
 
-### The Problem: Finite IP Addresses
-IPv4 addresses consist of a finite set of combinations (approx. 4.3 billion).
--   **The Risk**: Hashing functions (like SHA256) are irreversible one-way functions. However, if we simply stored `SHA256(IP_Address)`, an attacker (or admin) could pre-calculate the hashes for *all* existing IP addresses (a "Rainbow Table") in seconds. By comparing the stored hash with their list, they could immediately reveal the original IP.
+**The Goal**: To give members and non-members a safe way to provide feedback on community matters, votes, or other topics directly to the leadership or a responsible committee.
 
-### The Solution: HMAC with a Rotating Secret
-We use HMAC (Hash-Based Message Authentication Code). This combines the message (IP) with a cryptographic **Secret Key** before hashing.
--   **The Mechanism**: `Identifier = HMAC(IP_Address + Secret_Key)`
--   **Why it works**: Even though the attacker knows all possible IP addresses, they do **not** know the `Secret Key`. Without this key, they cannot pre-calculate the hashes. The "Rainbow Table" attack becomes impossible because the secret variable is missing.
-
-### Forward Secrecy (Key Rotation)
-The `Secret Key` is rotated automatically (e.g., every 4 hours).
--   **Scenario**: Imagine the server is hacked and the attacker steals the *current* Secret Key and the database.
--   **Protection**: Because the key changes regularly and old keys are **permanently discarded**, the attacker can only calculate IP hashes for the *current* time window (e.g., the last 4 hours). All activities from yesterday or last week were hashed with keys that no longer exist. This ensures **Forward Secrecy**: past anonymity cannot be broken, even if the current system is compromised.
-
-### Fast vs. Slow Rotation
-You can configure the rotation interval (`hmac_rotation_hours`).
--   **Fast Rotation (e.g., 1 hour)**:
-    -   **Pros**: Maximum anonymity. The window of time where distinct actions can be linked to the same (unknown) actor is very short.
-    -   **Cons**: "Memory loss" for rate limiting. When the key rotates, the server "forgets" who has already sent messages. A spammer blocked in Hour 1 is effectively unblocked in Hour 2.
--   **Slow Rotation (e.g., 24 hours)**:
-    -   **Pros**: Stronger protection against spam, as blocks persist longer.
-    -   **Cons**: Within this 24-hour window, an admin can see that "User X" sent 5 messages, even if they don't know who "User X" is (Linkability).
-
-**Recommendation**: A value between **4 and 12 hours** offers a solid balance.
+**The Workflow**:
+1.  **Submission**: A user submits feedback via the `/anonymous-feedback` form. The subject line can help categorize the message. This post comes with the subject "Anonymous Message - dd.mm.yyyy, hh:mm:ss" to the "HeartCare" collective mailbox.
+2.  **Private Delivery**: The message arrives as a private message to the `target_group`. It is recognizable as "anonymous feedback". The "HeartCare" team then decides what happens with the message.
+3.  **Internal Handling**: The team can then discuss the feedback privately, involve other relevant parties if necessary, or decide on further action. This feedback could be used for votes or other anonymous suggestions.
+4.  **Best Practice for Inappropriate Feedback**: If a submission is inappropriate, the team can simply delete it. You might consider posting a general, public notice (e.g., in a "News" category) stating: "Feedback received on [Date] was not processed because it violated our community standards for respectful communication." This informs the sender without revealing details and encourages them to try again in a more constructive manner. If it is a post for the "White Board" (recognizable as it has no special marking, or possibly a suffix is added if helpful): You invite the mods to the message, but no one replies to the message, no one. The mods convert the message into a topic in the "White Board" category → visible to members/aspirants/moderators and not commentable.
 
 ## Features
 
@@ -82,7 +65,7 @@ You can configure the rotation interval (`hmac_rotation_hours`).
 -   **Protection via Door Code**: Each form is protected by its own secret door code to prevent spam. The door code is the same for everyone, and the page can also be used in private mode or on parents' computer.
 -   **Configurable Target Group**: Messages from each form are sent as a private message to a specific, configurable user group.
 -   **One-Time Session**: After a message has been successfully sent, the user is redirected back to the door code screen. They must enter the code again to send another message, which prevents simple multi-post spamming. After sending, you land back on the door code, no multi-post is easily possible.
--   **Anonymity-Preserving Rate Limiting**: Protects against brute-force attacks and spam without logging IP addresses.
+-   **Anonymity-Preserving Rate Limiting**: Protects against brute-force attacks and spam without logging IP addresses. A temporary, anonymous identifier (HMAC with a rotating secret) is used to track failed attempts. A maximum of N (Default = 5) feedbacks per hour can be submitted, which is ample and helps if evil bots should get in or someone wants to have a joke.
 -   **Bot Protection**: Contains a hidden honeypot field to catch simple bots.
 -   **Custom Sender User**: You can define a bot user for each form so that the private messages appear to be sent by this user (e.g., "FeedbackBot"). The user must exist. If empty, the system user is used by default.
 -   **Clean, Modern User Interface**: The forms are based on a reusable Ember.js component for a consistent and clean user experience.
@@ -116,17 +99,8 @@ After installation, you can configure the plugin in the Discourse admin settings
 | `... max_message_length` | The maximum number of characters allowed in the message text. |
 | `... hmac_rotation_hours` | How often the secret key for rate limiting rotates. A shorter duration resets brute-force locks faster but is slightly less secure. |
 | `... bot_username` | Optional. The username of the user who will send the PM. The user must exist. If empty, the system user is used. |
-
-## How It Works (Technical Overview)
-
-The plugin was developed with a focus on anonymity and security.
-
-1.  **Access**: A user navigates to `/anonymous-feedback` or `/white-board`.
-2.  **Unlock**: The user must enter the correct door code. The server validates this code.
-    -   To prevent brute-force attacks, the server uses a rate-limiting system based on an HMAC hash of the user's IP address and a rotating secret. The IP address itself is never stored.
-    -   If the code is correct, the server sets a temporary, one-time usable flag in the user's session.
-3.  **Submit**: The user writes and sends their message.
-4.  **Create PM**: The server checks the session flag. If valid, it creates a new private message to the configured target group and posts it as the configured bot user (or system user). The session flag is then immediately deleted, so the user has to enter the door code again for any further message.
+| `... subject_placeholder` | Optional. Placeholder text for the subject input field. |
+| `... message_placeholder` | Optional. Placeholder text for the message textarea. |
 
 ## Development / Architecture
 
@@ -134,6 +108,35 @@ The plugin was developed with a focus on anonymity and security.
 -   **Frontend**: The user interface is based on a single, reusable Ember.js component, `<AnonymousFeedbackForm />`.
     -   This component contains the entire HTML, CSS, and Javascript logic for the form's state (unlocking, sending, error handling).
     -   The route templates (`anonymous-feedback.hbs` and `white-board.hbs`) are now extremely simple. They just instantiate this component and pass the correct parameters (e.g., title, API URLs). This DRY (Don't Repeat Yourself) approach makes the frontend code clean and easy to maintain.
+
+## Deep Dive: Anonymity & Rate Limiting (HMAC)
+
+A core feature of this plugin is the balance between **absolute anonymity** and **protection against abuse** (spam).
+
+### The Problem: Finite IP Addresses
+IPv4 addresses consist of a finite set of combinations (approx. 4.3 billion).
+-   **The Risk**: Hashing functions (like SHA256) are irreversible one-way functions. However, if we simply stored `SHA256(IP_Address)`, an attacker (or admin) could pre-calculate the hashes for *all* existing IP addresses (a "Rainbow Table") in seconds. By comparing the stored hash with their list, they could immediately reveal the original IP.
+
+### The Solution: HMAC with a Rotating Secret
+We use HMAC (Hash-Based Message Authentication Code). This combines the message (IP) with a cryptographic **Secret Key** before hashing.
+-   **The Mechanism**: `Identifier = HMAC(IP_Address + Secret_Key)`
+-   **Why it works**: Even though the attacker knows all possible IP addresses, they do **not** know the `Secret Key`. Without this key, they cannot pre-calculate the hashes. The "Rainbow Table" attack becomes impossible because the secret variable is missing.
+
+### Forward Secrecy (Key Rotation)
+The `Secret Key` is rotated automatically (e.g., every 4 hours).
+-   **Scenario**: Imagine the server is hacked and the attacker steals the *current* Secret Key and the database.
+-   **Protection**: Because the key changes regularly and old keys are **permanently discarded**, the attacker can only calculate IP hashes for the *current* time window (e.g., the last 4 hours). All activities from yesterday or last week were hashed with keys that no longer exist. This ensures **Forward Secrecy**: past anonymity cannot be broken, even if the current system is compromised.
+
+### Fast vs. Slow Rotation
+You can configure the rotation interval (`hmac_rotation_hours`).
+-   **Fast Rotation (e.g., 1 hour)**:
+    -   **Pros**: Maximum anonymity. The window of time where distinct actions can be linked to the same (unknown) actor is very short.
+    -   **Cons**: "Memory loss" for rate limiting. When the key rotates, the server "forgets" who has already sent messages. A spammer blocked in Hour 1 is effectively unblocked in Hour 2.
+-   **Slow Rotation (e.g., 24 hours)**:
+    -   **Pros**: Stronger protection against spam, as blocks persist longer.
+    -   **Cons**: Within this 24-hour window, an admin can see that "User X" sent 5 messages, even if they don't know who "User X" is (Linkability).
+
+**Recommendation**: A value between **4 and 12 hours** offers a solid balance.
 
 ---
 
@@ -155,6 +158,17 @@ In vielen Communitys erfordern sensible Themen oder Ideen einen Feedback-Kanal, 
 -   **Einfachheit für Nicht-Benutzer**: Der Türcode-Mechanismus ermöglicht es externen Parteien oder temporären Besuchern, Beiträge zu leisten, ohne den Aufwand einer vollständigen Kontoregistrierung.
 
 Letztendlich verbessert dieses Plugin die Community-Interaktion, indem es ein inklusiveres und sichereres Umfeld für kritische Diskussionen und Vorschläge schafft.
+
+## Funktionsweise (Technische Übersicht)
+
+Das Plugin wurde mit Fokus auf Anonymität und Sicherheit entwickelt.
+
+1.  **Zugriff**: Ein Benutzer navigiert zu `/anonymous-feedback` oder `/white-board`.
+2.  **Freischalten**: Der Benutzer muss den korrekten Türcode eingeben. Der Server validiert diesen Code.
+    -   Um Brute-Force-Angriffe zu verhindern, verwendet der Server ein Ratenbegrenzungssystem, das auf einem HMAC-Hash der IP-Adresse des Benutzers und einem rotierenden Geheimnis basiert. Die IP-Adresse selbst wird niemals gespeichert.
+    -   Wenn der Code korrekt ist, setzt der Server ein temporäres, einmalig verwendbares Flag in der Sitzung des Benutzers.
+3.  **Absenden**: Der Benutzer schreibt und sendet seine Nachricht.
+4.  **PN erstellen**: Der Server prüft das Sitzungs-Flag. Wenn es gültig ist, erstellt er eine neue private Nachricht an die konfigurierte Zielgruppe und postet sie als der konfigurierte Bot-Benutzer (oder Systembenutzer). Das Sitzungs-Flag wird dann sofort gelöscht, sodass der Benutzer für jede weitere Nachricht den Türcode erneut eingeben muss.
 
 ## Beispiel-Anwendungsfälle / Workflows
 
@@ -186,42 +200,13 @@ Dieser Anwendungsfall dient dazu, eine direkte, vertrauliche Kommunikationslinie
 3.  **Interne Bearbeitung**: Das Team kann das Feedback dann privat diskutieren, bei Bedarf andere relevante Parteien einbeziehen oder über das weitere Vorgehen entscheiden. Dieses Feedback könnte für Abstimmungen oder andere anonyme Vorschläge genutzt werden.
 4.  **Best Practice für unangemessenes Feedback**: Wenn eine Einreichung unangemessen ist, kann das Team sie einfach löschen. Sie könnten in Erwägung ziehen, eine allgemeine, öffentliche Mitteilung zu veröffentlichen (z. B. in einer "Neuigkeiten"-Kategorie), in der es heißt: "Feedback, das am [Datum] eingegangen ist, wurde nicht bearbeitet, da es gegen unsere Community-Standards für respektvolle Kommunikation verstoßen hat." Dies informiert den Absender ohne Details preiszugeben und ermutigt ihn, es auf konstruktivere Weise erneut zu versuchen. Ist es ein Post für das "Weiße Brett" (es hat keine Kennzeichnung und ist somit als Eintrag für das WB erkennbar, evtl. kommt noch ein Suffix hin, wenn euch das hilft): Ihr ladet die Mods mit in die Nachricht ein, aber es wird nicht auf die Nachricht geantwortet, von keinem. Die Mods wandeln die Nachricht in ein Thema in der Kategorie "Weiße Brett" um → sichtbar für Mitglieder/Anwärter/Moderatoren und nicht kommentierbar.
 
-## Detailwissen: Anonymität & Ratenbegrenzung (HMAC)
-
-Ein Kernfeature dieses Plugins ist die Balance zwischen **absoluter Anonymität** und **Schutz vor Missbrauch** (Spam).
-
-### Das Problem: Endliche IP-Adressen
-IPv4-Adressen bestehen aus einer endlichen Menge an Kombinationen (ca. 4,3 Milliarden).
--   **Das Risiko**: Hash-Funktionen (wie SHA256) sind nicht umkehrbare Einwegfunktionen. Würden wir jedoch nur `SHA256(IP_Adresse)` speichern, könnte ein Angreifer (oder Admin) in Sekunden die Hashes für *alle* existierenden IP-Adressen vorausberechnen ("Rainbow Table"). Durch Abgleich mit dem gespeicherten Hash ließe sich die ursprüngliche IP sofort aufdecken.
-
-### Die Lösung: HMAC mit rotierendem Geheimnis
-Wir verwenden HMAC (Hash-Based Message Authentication Code). Dabei wird die Nachricht (IP) vor dem Hashen mit einem kryptographischen **Geheimen Schlüssel** kombiniert.
--   **Der Mechanismus**: `Bezeichner = HMAC(IP_Adresse + Geheimer_Schlüssel)`
--   **Warum es funktioniert**: Obwohl der Angreifer alle IP-Adressen kennt, kennt er den `Geheimen Schlüssel` **nicht**. Ohne diesen Schlüssel kann er die Hashes nicht vorausberechnen. Der "Rainbow Table"-Angriff ist unmöglich, da die geheime Variable fehlt.
-
-### Forward Secrecy (Schlüsselrotation)
-Der `Geheime Schlüssel` wird automatisch ausgetauscht (rotiert), z. B. alle 4 Stunden.
--   **Das Szenario**: Stellen Sie sich vor, der Server wird gehackt und der Angreifer stiehlt den *aktuellen* geheimen Schlüssel und die Datenbank.
--   **Der Schutz**: Da der Schlüssel regelmäßig geändert und der alte **unwiederbringlich gelöscht** wird, kann der Angreifer nur IP-Hashes für das *aktuelle* Zeitfenster (z. B. die letzten 4 Stunden) berechnen. Alle Aktivitäten von gestern oder letzter Woche wurden mit Schlüsseln gehasht, die nicht mehr existieren. Dies garantiert **Forward Secrecy**: Vergangene Anonymität kann nicht gebrochen werden, selbst wenn das System heute kompromittiert wird.
-
-### Schnelle vs. Langsame Rotation
-Sie können das Rotationsintervall (`hmac_rotation_hours`) konfigurieren.
--   **Schnelle Rotation (z. B. 1 Stunde)**:
-    -   **Vorteil**: Maximale Anonymität. Das Zeitfenster, in dem verschiedene Aktionen demselben (unbekannten) Akteur zugeordnet werden können, ist sehr kurz.
-    -   **Nachteil**: "Gedächtnisverlust" bei der Ratenbegrenzung. Wenn der Schlüssel rotiert, "vergisst" der Server, wer schon Nachrichten gesendet hat. Ein Spammer, der in Stunde 1 blockiert wurde, ist in Stunde 2 effektiv wieder freigeschaltet.
--   **Langsame Rotation (z. B. 24 Stunden)**:
-    -   **Vorteil**: Stärkerer Schutz vor Spam, da Sperren länger anhalten.
-    -   **Nachteil**: Innerhalb dieses 24-Stunden-Fensters kann ein Admin sehen, dass "Benutzer X" 5 Nachrichten gesendet hat, auch wenn er nicht weiß, wer "Benutzer X" ist (Verkettbarkeit).
-
-**Empfehlung**: Ein Wert zwischen **4 und 12 Stunden** bietet eine gute Balance.
-
 ## Funktionen
 
 -   **Zwei unabhängige Endpunkte**: Stellt `/anonymous-feedback` und `/white-board` bereit, jeder mit eigener, separater Konfiguration.
 -   **Schutz durch Türcode**: Jedes Formular ist durch einen eigenen geheimen Türcode geschützt, um Spam zu verhindern. Der Türcode ist für alle gleich, und die Seite kann auch im privaten Modus oder auf dem Rechner seiner Eltern genutzt werden.
 -   **Konfigurierbare Zielgruppe**: Nachrichten aus jedem Formular werden als private Nachricht an eine spezifische, konfigurierbare Benutzergruppe gesendet.
 -   **Einmalige Sitzung**: Nachdem eine Nachricht erfolgreich gesendet wurde, wird der Benutzer zum Türcode-Bildschirm zurückgeleitet. Er muss den Code erneut eingeben, um eine weitere Nachricht zu senden, was einfaches Multi-Post-Spamming verhindert. Nach dem Absenden landet man wieder auf dem Türcode-Bildschirm, kein Multi-Post ist so einfach möglich.
--   **Anonymität wahrende Ratenbegrenzung**: Schützt vor Brute-Force-Angriffen und Spam, ohne IP-Adressen zu protokollieren.
+-   **Anonymität wahrende Ratenbegrenzung**: Schützt vor Brute-Force-Angriffen und Spam, ohne IP-Adressen zu protokollieren. Es wird ein temporärer, anonymer Bezeichner (HMAC mit einem rotierenden Geheimnis) verwendet, um fehlgeschlagene Versuche zu verfolgen. Es können maximal N (Standard = 5) Feedbacks pro Stunde eingereicht werden, was üppig ist und hilft, falls doch mal böse Bots reinkommen sollten oder sich jemand einen Spaß erlauben will.
 -   **Bot-Schutz**: Enthält ein verstecktes Honeypot-Feld, um einfache Bots abzufangen.
 -   **Benutzerdefinierter Absender-Benutzer**: Sie können für jedes Formular einen Bot-Benutzer festlegen, sodass die privaten Nachrichten scheinbar von diesem Benutzer gesendet werden (z. B. "FeedbackBot"). Der Benutzer muss existieren. Wenn leer, wird standardmäßig der Systembenutzer verwendet.
 -   **Saubere, moderne Benutzeroberfläche**: Die Formulare basieren auf einer wiederverwendbaren Ember.js-Komponente für eine konsistente und saubere Benutzererfahrung.
@@ -258,20 +243,38 @@ Nach der Installation können Sie das Plugin in den Discourse-Admin-Einstellunge
 | `... subject_placeholder` | Optional. Platzhaltertext für das Betreff-Eingabefeld. |
 | `... message_placeholder` | Optional. Platzhaltertext für das Nachrichten-Eingabefeld. |
 
-## Funktionsweise (Technische Übersicht)
-
-Das Plugin wurde mit Fokus auf Anonymität und Sicherheit entwickelt.
-
-1.  **Zugriff**: Ein Benutzer navigiert zu `/anonymous-feedback` oder `/white-board`.
-2.  **Freischalten**: Der Benutzer muss den korrekten Türcode eingeben. Der Server validiert diesen Code.
-    -   Um Brute-Force-Angriffe zu verhindern, verwendet der Server ein Ratenbegrenzungssystem, das auf einem HMAC-Hash der IP-Adresse des Benutzers und einem rotierenden Geheimnis basiert. Die IP-Adresse selbst wird niemals gespeichert.
-    -   Wenn der Code korrekt ist, setzt der Server ein temporäres, einmalig verwendbares Flag in der Sitzung des Benutzers.
-3.  **Absenden**: Der Benutzer schreibt und sendet seine Nachricht.
-4.  **PN erstellen**: Der Server prüft das Sitzungs-Flag. Wenn es gültig ist, erstellt er eine neue private Nachricht an die konfigurierte Zielgruppe und postet sie als der konfigurierte Bot-Benutzer (oder Systembenutzer). Das Sitzungs-Flag wird dann sofort gelöscht, sodass der Benutzer für jede weitere Nachricht den Türcode erneut eingeben muss.
-
 ## Entwicklung / Architektur
 
 -   **Backend**: Ein einziger Ruby on Rails Controller, `AnonymousFeedbackController`, verarbeitet alle Anfragen für beide Endpunkte. Er verwendet eine `kind`-Methode, die den Anfragepfad (`/anonymous-feedback` vs. `/white-board`) prüft, um zu bestimmen, welche Konfigurationen verwendet werden sollen. Dies vermeidet Code-Duplizierung. Ein dynamischer `setting`-Helfer vereinfacht das Auslesen der Konfiguration zusätzlich.
 -   **Frontend**: Die Benutzeroberfläche basiert auf einer einzigen, wiederverwendbaren Ember.js-Komponente, `<AnonymousFeedbackForm />`.
     -   Diese Komponente enthält die gesamte HTML-, CSS- und Javascript-Logik für den Zustand des Formulars (Freischalten, Senden, Fehlerbehandlung).
     -   Die Routen-Templates (`anonymous-feedback.hbs` und `white-board.hbs`) sind jetzt extrem einfach. Sie instanziieren nur noch diese Komponente und übergeben die richtigen Parameter (z. B. Titel, API-URLs). Dieser DRY-Ansatz (Don't Repeat Yourself) macht den Frontend-Code sauber und leicht wartbar.
+
+## Detailwissen: Anonymität & Ratenbegrenzung (HMAC)
+
+Ein Kernfeature dieses Plugins ist die Balance zwischen **absoluter Anonymität** und **Schutz vor Missbrauch** (Spam).
+
+### Das Problem: Endliche IP-Adressen
+IPv4-Adressen bestehen aus einer endlichen Menge an Kombinationen (ca. 4,3 Milliarden).
+-   **Das Risiko**: Hash-Funktionen (wie SHA256) sind nicht umkehrbare Einwegfunktionen. Würden wir jedoch nur `SHA256(IP_Adresse)` speichern, könnte ein Angreifer (oder Admin) in Sekunden die Hashes für *alle* existierenden IP-Adressen vorausberechnen ("Rainbow Table"). Durch Abgleich mit dem gespeicherten Hash ließe sich die ursprüngliche IP sofort aufdecken.
+
+### Die Lösung: HMAC mit rotierendem Geheimnis
+Wir verwenden HMAC (Hash-Based Message Authentication Code). Dabei wird die Nachricht (IP) vor dem Hashen mit einem kryptographischen **Geheimen Schlüssel** kombiniert.
+-   **Der Mechanismus**: `Bezeichner = HMAC(IP_Adresse + Geheimer_Schlüssel)`
+-   **Warum es funktioniert**: Obwohl der Angreifer alle IP-Adressen kennt, kennt er den `Geheimen Schlüssel` **nicht**. Ohne diesen Schlüssel kann er die Hashes nicht vorausberechnen. Der "Rainbow Table"-Angriff ist unmöglich, da die geheime Variable fehlt.
+
+### Forward Secrecy (Schlüsselrotation)
+Der `Geheime Schlüssel` wird automatisch ausgetauscht (rotiert), z. B. alle 4 Stunden.
+-   **Das Szenario**: Stellen Sie sich vor, der Server wird gehackt und der Angreifer stiehlt den *aktuellen* geheimen Schlüssel und die Datenbank.
+-   **Der Schutz**: Da der Schlüssel regelmäßig geändert und der alte **unwiederbringlich gelöscht** wird, kann der Angreifer nur IP-Hashes für das *aktuelle* Zeitfenster (z. B. die letzten 4 Stunden) berechnen. Alle Aktivitäten von gestern oder letzter Woche wurden mit Schlüsseln gehasht, die nicht mehr existieren. Dies garantiert **Forward Secrecy**: Vergangene Anonymität kann nicht gebrochen werden, selbst wenn das System heute kompromittiert wird.
+
+### Schnelle vs. Langsame Rotation
+Sie können das Rotationsintervall (`hmac_rotation_hours`) konfigurieren.
+-   **Schnelle Rotation (z. B. 1 Stunde)**:
+    -   **Vorteil**: Maximale Anonymität. Das Zeitfenster, in dem verschiedene Aktionen demselben (unbekannten) Akteur zugeordnet werden können, ist sehr kurz.
+    -   **Nachteil**: "Gedächtnisverlust" bei der Ratenbegrenzung. Wenn der Schlüssel rotiert, "vergisst" der Server, wer schon Nachrichten gesendet hat. Ein Spammer, der in Stunde 1 blockiert wurde, ist in Stunde 2 effektiv wieder freigeschaltet.
+-   **Langsame Rotation (z. B. 24 Stunden)**:
+    -   **Vorteil**: Stärkerer Schutz vor Spam, da Sperren länger anhalten.
+    -   **Nachteil**: Innerhalb dieses 24-Stunden-Fensters kann ein Admin sehen, dass "Benutzer X" 5 Nachrichten gesendet hat, auch wenn er nicht weiß, wer "Benutzer X" ist (Verkettbarkeit).
+
+**Empfehlung**: Ein Wert zwischen **4 und 12 Stunden** bietet eine gute Balance.
